@@ -35,13 +35,16 @@ class VideoDatabaseTest {
         db.close()
     }
 
+
+
     @Test
-    fun testQueryUsers() = runBlocking {
+    fun testQueryVideo() = runBlocking {
         Dao.insertAllVideo(generateRandomVideoData())
 
         val videos = Dao.getAllVideoSnapShot()
         assertEquals(videos.size, 3)
         assertEquals(videos[0].uri, generateRandomVideoData()[0].uri )
+        assert(generateRandomVideoData().contains(videos[1]))
     }
     fun generateRandomVideoData(): List<Video> {
         return listOf(
@@ -71,4 +74,5 @@ class VideoDatabaseTest {
             )
         )
     }
+
 }
