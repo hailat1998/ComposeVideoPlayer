@@ -1,5 +1,6 @@
 package com.hd1998.composeplayer.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hd1998.composeplayer.domain.model.Video
@@ -20,6 +21,10 @@ class MainViewModel(private val repository: Repository, private val dispatcher: 
         loading.value = true
         viewModelScope.launch(dispatcher) {
             repository.getVideos().collect{
+                it.forEach{ v ->
+                    println(v)
+                }
+                Log.i("VIEWMODEL", "${it.size}" )
                 _videoStateFlow.value = it
             }
         }

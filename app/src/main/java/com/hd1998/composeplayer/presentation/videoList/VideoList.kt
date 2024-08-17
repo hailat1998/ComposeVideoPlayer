@@ -58,7 +58,8 @@ import com.hd1998.composeplayer.domain.model.Video
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun VideoList(list: State<List<Video>>, querying: State<Boolean>){
+fun VideoList(list: State<List<Video>>, querying: State<Boolean>,
+              toPlayer:(url:String) -> Unit){
     var showMenu = remember { mutableStateOf(false)    }
     Scaffold(topBar = {TopAppBar(title = {
         Text(
@@ -69,9 +70,9 @@ fun VideoList(list: State<List<Video>>, querying: State<Boolean>){
     actions = {
         Icon(Icons.Default.MoreVert, null,
             modifier = Modifier.clickable { showMenu.value = true })
-    }
-    )
-    }
+          }
+        )
+      }
     ) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -93,14 +94,14 @@ fun VideoList(list: State<List<Video>>, querying: State<Boolean>){
             }else{
                 LazyColumn {
              itemsIndexed(list.value, {index: Int, item: Video -> item.uri.path!! }){ _, item ->
-                 VideoRow(video = item)
+                 VideoRow(video = item, toPlayer = toPlayer)
              }
             }
            }
         }
     }
     if(showMenu.value){
-        CascadingMenu(showMenu = showMenu)
+        CascadingMenu(showMenu = showMenu, list = list.value)
     }
 }
 
@@ -108,8 +109,7 @@ fun VideoList(list: State<List<Video>>, querying: State<Boolean>){
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun VideoRow(video: Video) {
-    val artist = if (video.artist.isBlank()) " " else video.artist
+fun VideoRow(video: Video, toPlayer: (url: String) -> Unit) {
     val context = LocalContext.current
 
     val thumbnail: Bitmap =
@@ -121,6 +121,7 @@ fun VideoRow(video: Video) {
             .fillMaxWidth()
             .padding(top = 10.dp, bottom = 10.dp)
             .alpha(0.8f) // Set alpha for the Card
+            .clickable { toPlayer.invoke(video.uri.toString()) }
     ) {
         Row(
             modifier = Modifier
@@ -139,7 +140,7 @@ fun VideoRow(video: Video) {
                 maxLines = 1
             )
             Text(
-                text = artist,
+                text = video.name,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .weight(1f)
@@ -152,7 +153,7 @@ fun VideoRow(video: Video) {
 }
 
 @Composable
-fun CascadingMenu(showMenu: MutableState<Boolean>) {
+fun CascadingMenu(showMenu: MutableState<Boolean>, list: List<Video>) {
 
     var subMenuExpanded by remember { mutableStateOf(false) }
 
@@ -179,18 +180,27 @@ fun CascadingMenu(showMenu: MutableState<Boolean>) {
                 ) {
                     DropdownMenuItem(
                         text = { BasicText("Size") },
-                        onClick = {  }
+                        onClick = { list.sortByType("size") }
                     )
                     DropdownMenuItem(
                         text = { BasicText("Name") },
-                        onClick = {  }
+                        onClick = { list.sortByType("name")  }
                     )
                     DropdownMenuItem(
                         text = { BasicText("Date") },
-                        onClick = {  }
+                        onClick = { list.sortByType("date") }
                     )
                 }
             }
         }
+    }
+}
+
+
+fun List<Video>.sortByType(type: String) {
+    when (type) {
+        "size" -> this.sortedBy { it.size }
+        "date" -> this.sortedBy { it.dateModified }
+        else -> this.sortedBy { it.name }
     }
 }

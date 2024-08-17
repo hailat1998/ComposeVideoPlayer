@@ -55,8 +55,6 @@ class VideoWorker(private val database: VideoDatabase, context: Context,
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
             val modifiedDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
             val addedDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_ADDED)
-            val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.ARTIST)
-            val albumColumns = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.ALBUM)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
@@ -65,22 +63,18 @@ class VideoWorker(private val database: VideoDatabase, context: Context,
                 val size = cursor.getInt(sizeColumn)
                 val modifiedDate = cursor.getLong(modifiedDateColumn)
                 val addedDate = cursor.getLong(addedDateColumn)
-                val artist = cursor.getString(artistColumn)
-                val album = cursor.getString(albumColumns)
+
 
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                     id
                         )
                 videoList += Video(uri = contentUri, name = name, duration= duration, size = size,
-                    dateModified =  Date(modifiedDate  * 1000), dateAdded = Date(addedDate  * 1000),
-                    artist = artist, album = album)
+                    dateModified =  Date(modifiedDate  * 1000), dateAdded = Date(addedDate  * 1000))
             }
         }
-       Log.i("WORKER", "${videoList.size}")
-       videoList.forEach{
-           println(it.uri.path)
-       }
+           Log.i("WORKER", "${videoList.size}")
+
        database.videoDao().insertAllVideo(videoList)
     }
 }

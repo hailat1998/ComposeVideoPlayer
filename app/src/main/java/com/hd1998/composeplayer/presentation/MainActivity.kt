@@ -8,18 +8,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.rememberNavController
 import com.hd1998.composeplayer.presentation.theme.ComposePlayerTheme
 import com.hd1998.composeplayer.presentation.videoList.VideoList
 import org.koin.androidx.compose.koinViewModel
@@ -44,12 +41,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ComposePlayerTheme {
-                val viewModel = koinViewModel<MainViewModel>()
-                viewModel.loadVideo()
-                val list = viewModel.videoStateFlow.collectAsState()
-                val loading = viewModel.loading.collectAsState()
+              
                 Surface {
-                    VideoList(list = list, loading)
+                   val navHostController = rememberNavController()
+                    MainNavHost(navHostController = navHostController)
                 }
             }
         }

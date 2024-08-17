@@ -7,7 +7,9 @@ import com.hd1998.composeplayer.data.local.database.VideoDatabase
 import com.hd1998.composeplayer.data.worker.VideoWorker
 import com.hd1998.composeplayer.domain.model.Video
 import com.hd1998.composeplayer.domain.repository.Repository
+import com.hd1998.composeplayer.presentation.videoList.sortByType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 
 const val WORK_NAME = "video"
@@ -19,7 +21,9 @@ class VideoRepositoryImp(private val workManager: WorkManager,
                              }
 
     override fun getVideos(): Flow<List<Video>> {
-       return database.videoDao().getAllVideo()
+          val list = database.videoDao().getAllVideoSnapShot()
+          println(list.size)
+          return database.videoDao().getAllVideo()
     }
 
     override suspend fun insertVideoS(video: List<Video>) {
@@ -29,4 +33,5 @@ class VideoRepositoryImp(private val workManager: WorkManager,
     override fun enQueueWork(){
         val oneTimeWorkRequest = OneTimeWorkRequestBuilder<VideoWorker>().build()
         workManager.enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.KEEP, oneTimeWorkRequest)
-    } }
+    }
+                         }
