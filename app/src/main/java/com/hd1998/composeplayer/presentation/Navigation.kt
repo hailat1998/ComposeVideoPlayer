@@ -14,7 +14,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun MainNavHost(navHostController: NavHostController){
+fun MainNavHost(navHostController: NavHostController){1
     val viewModel = koinViewModel<MainViewModel>()
     NavHost(navController = navHostController, startDestination = Routes.Home) {
         composable<Routes.Home> {

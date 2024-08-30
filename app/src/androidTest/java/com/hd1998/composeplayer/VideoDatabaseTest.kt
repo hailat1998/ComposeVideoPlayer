@@ -55,8 +55,7 @@ class VideoDatabaseTest {
                 dateAdded = Date(1622592000000),
                 duration = 600000, // 10 minutes in milliseconds
                 size = 10485760, // 10 MB
-                album = "",
-                artist = ""
+
             ),
             Video(
                 uri = Uri.parse("content://media/external/video/media/2"),
@@ -65,8 +64,6 @@ class VideoDatabaseTest {
                 dateAdded = Date(1625270400000),
                 duration = 300000, // 5 minutes in milliseconds
                 size = 5242880 ,// 5 MB
-                album = "",
-                artist = ""
             ),
             Video(
                 uri = Uri.parse("content://media/external/video/media/3"),
@@ -75,8 +72,6 @@ class VideoDatabaseTest {
                 dateAdded = Date(1627862400000),
                 duration = 900000, // 15 minutes in milliseconds
                 size = 15728640, // 15 MB
-                album = "",
-                artist = ""
             )
         )
     }
