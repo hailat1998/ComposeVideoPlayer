@@ -4,6 +4,7 @@ import androidx.room.Room
 import androidx.work.WorkManager
 import com.hd1998.composeplayer.data.local.database.MIGRATION_1_2
 import com.hd1998.composeplayer.data.local.database.MIGRATION_2_3
+import com.hd1998.composeplayer.data.local.database.MIGRATION_3_4
 import com.hd1998.composeplayer.data.local.database.VideoDatabase
 import com.hd1998.composeplayer.data.reposirory.VideoRepositoryImp
 import com.hd1998.composeplayer.data.worker.VideoWorker
@@ -28,7 +29,7 @@ val appModule = module{
             androidApplication(),
             VideoDatabase::class.java,
             DB
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
     }
 
     single<WorkManager> { WorkManager.getInstance(androidApplication()) }

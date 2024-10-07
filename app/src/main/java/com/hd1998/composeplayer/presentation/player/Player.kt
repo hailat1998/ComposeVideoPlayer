@@ -1,9 +1,14 @@
 package com.hd1998.composeplayer.presentation.player
 
 import androidx.annotation.OptIn
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
@@ -42,14 +47,20 @@ fun Player(uri: String){
     exoPlayer.prepare()
     exoPlayer.playWhenReady = true
 
-    AndroidView(factory = {
-        PlayerView(it).apply {
-            useController = true
-            player = exoPlayer
-            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-          }
-       }
-    )
+
+    Box(contentAlignment = Alignment.Center) {
+
+        AndroidView(factory = {
+            PlayerView(it).apply {
+                useController = true
+                player = exoPlayer
+                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+            }
+        },
+            modifier = Modifier.background(Color.Black).align(Alignment.Center)
+        )
+
+    }
     DisposableEffect(Unit) {
         onDispose {
             exoPlayer.release()

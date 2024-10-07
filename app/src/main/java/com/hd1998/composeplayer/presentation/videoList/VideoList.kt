@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,6 +64,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.hd1998.composeplayer.R
 import com.hd1998.composeplayer.domain.model.Video
 import kotlinx.coroutines.selects.select
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -71,10 +73,12 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun VideoList(list: State<List<Video>>, querying: State<Boolean>,
-              toPlayer:(url:String) -> Unit){
+fun VideoList(list: State<List<Video>>,
+              querying: State<Boolean>,
+              toPlayer:(url:String) -> Unit,
+              incrementPlayed: (uri: Uri, value: Int) -> Unit){
     val showMenu = remember { mutableStateOf(false)    }
-    val mutableList = list.value.toMutableStateList()
+    val mutableList = list.value.distinct().toMutableStateList()
     var showInfo by remember { mutableStateOf(false)  }
     var selected by remember { mutableStateOf( Video(
         uri = Uri.parse("content://media/external/video/media/1"),
@@ -83,7 +87,7 @@ fun VideoList(list: State<List<Video>>, querying: State<Boolean>,
         dateAdded = Date(1622592000000),
         duration = 600000,
         size = 10485760,
-
+        played = 0
     ),
         ) }
     Scaffold(topBar = {TopAppBar(title = {
@@ -118,11 +122,11 @@ fun VideoList(list: State<List<Video>>, querying: State<Boolean>,
                     modifier = Modifier.fillMaxSize())
             }else{
                 LazyColumn {
-             itemsIndexed(mutableList, {index: Int, item: Video -> item.uri.path!! }){ _, item ->
-                 VideoRow(video = item, toPlayer = toPlayer){
+             itemsIndexed(mutableList, {index: Int, item: Video -> item.uri.toString() }){ _, item ->
+                 VideoRow(video = item, toPlayer = toPlayer, incrementPlayed = incrementPlayed, showInfo = {
                            selected = it
                      showInfo = true
-                 }
+                 })
              }
             }
            }
@@ -146,59 +150,92 @@ fun VideoList(list: State<List<Video>>, querying: State<Boolean>,
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun VideoRow(video: Video, toPlayer: (url: String) -> Unit,
-             showInfo: (video: Video) -> Unit) {
+fun VideoRow(video: Video,
+             toPlayer: (url: String) -> Unit,
+             showInfo: (video: Video) -> Unit,
+             incrementPlayed: (uri: Uri, value: Int) -> Unit) {
     val context = LocalContext.current
 
     val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
     val formattedDate = dateFormat.format(video.dateAdded)
 
-    val name = if(video.name.length > 15) video.name.substring(0, 16) + "..." else video.name
-    val thumbnail: Bitmap =
+    val name =  video.name
+
+    val thumbnail: Bitmap? = try {
         context.contentResolver.loadThumbnail(
             video.uri, Size(640, 480), null
         )
+    } catch (e: IOException) {
+        Log.e("ThumbnailLoader", "IO Exception when loading thumbnail", e)
+        null
+    } catch (e: SecurityException) {
+        Log.e("ThumbnailLoader", "Security Exception when loading thumbnail", e)
+        null
+    } catch (e: Exception) {
+        Log.e("ThumbnailLoader", "Unexpected error when loading thumbnail", e)
+        null
+    }
+
     Card(
         modifier = Modifier
             .shadow(7.dp, RoundedCornerShape(7.dp))
             .fillMaxWidth()
             .padding(top = 10.dp, bottom = 10.dp)
-            .alpha(0.8f) // Set alpha for the Card
-            .clickable { toPlayer.invoke(video.uri.toString()) }
+            .alpha(0.8f)
+            .clickable {
+                incrementPlayed.invoke(video.uri, video.played + 1)
+                toPlayer.invoke(video.uri.toString())
+            }
     ) {
         Row(
             modifier = Modifier
                 .padding(15.dp)
             // .alpha(0.5f) // Set alpha for the Row
         ) {
-            Image(
-                painter = BitmapPainter(thumbnail.asImageBitmap()), null,
-                modifier = Modifier.size(60.dp, 60.dp).padding(end = 20.dp)
-            )
-            Column {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.titleLarge,
+            if (thumbnail != null) {
+                Image(
+                    painter = BitmapPainter(thumbnail.asImageBitmap()), null,
                     modifier = Modifier
-                        .alpha(1f),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
+                        .size(60.dp, 60.dp)
+                        .padding(end = 20.dp)
                 )
-                Text(
-                    text = formattedDate,
-                    style = MaterialTheme.typography.titleMedium,
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.background), null,
                     modifier = Modifier
-                        .alpha(1f),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
+                        .size(60.dp, 60.dp)
+                        .padding(end = 20.dp)
                 )
             }
-            Icon(Icons.Default.Info, null,
-               Modifier.clickable {
-                   showInfo.invoke(video)
-               }.offset(20.dp, 5.dp)
-                   .size(40.dp)
-            )
+            Box(Modifier.fillMaxWidth()) {
+                Column {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier
+                            .alpha(1f),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = formattedDate,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier
+                            .alpha(1f),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
+                }
+                Icon(Icons.Default.Info, null,
+                    Modifier
+                        .clickable {
+                            showInfo.invoke(video)
+                        }
+                        .offset(20.dp, 5.dp)
+                        .size(40.dp)
+                        .align(Alignment.CenterEnd)
+                )
+            }
         }
     }
 }
@@ -277,6 +314,7 @@ fun VideoInfoDialog(video: Video, onDismiss: () -> Unit) {
                 Text(text = "Date Added: ${dateFormat.format(video.dateAdded)}")
                 Text(text = "Duration: $duration")
                 Text(text = "Size: $size")
+                Text(text = "Played: ${video.played} times")
             }
         },
         confirmButton = {

@@ -21,15 +21,14 @@ fun MainNavHost(navHostController: NavHostController){1
             viewModel.loadVideo()
             val list = viewModel.videoStateFlow.collectAsStateWithLifecycle()
             val querying = viewModel.loading.collectAsStateWithLifecycle()
-            VideoList(list = list, querying = querying){ uri ->
+            VideoList(list = list, querying = querying, toPlayer = { uri ->
                 navHostController.navigate(Routes.Player(uri))
-            }
+            }, incrementPlayed = viewModel::incrementPlayed )
         }
 
         composable<Routes.Player> {backStackEntry ->
             val arg = backStackEntry.toRoute<Routes.Player>()
             Player(uri = arg.uri)
         }
-
     }
 }

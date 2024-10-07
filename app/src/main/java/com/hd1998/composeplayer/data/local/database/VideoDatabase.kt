@@ -69,3 +69,31 @@ val MIGRATION_2_3 = object : Migration(2,3) {
         db.execSQL("ALTER TABLE Video_new RENAME TO Video")
     }
 }
+
+val MIGRATION_3_4 = object : Migration(3,4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            CREATE TABLE Video_new (
+                uri TEXT PRIMARY KEY NOT NULL,
+                name TEXT NOT NULL,
+                dateModified INTEGER NOT NULL,
+                dateAdded INTEGER NOT NULL,
+                duration INTEGER NOT NULL,
+                size INTEGER NOT NULL,
+                played INTEGER DEFAULT 0
+                  )
+        """.trimIndent())
+
+
+        db.execSQL("""
+            INSERT INTO Video_new (uri, name, dateModified, dateAdded, duration, size)
+            SELECT uri, name, dateModified, dateAdded, duration, size FROM Video
+        """.trimIndent())
+
+
+        db.execSQL("DROP TABLE Video")
+
+
+        db.execSQL("ALTER TABLE Video_new RENAME TO Video")
+    }
+}

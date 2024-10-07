@@ -70,7 +70,7 @@ class VideoWorker(private val database: VideoDatabase, context: Context,
                     id
                         )
                 videoList += Video(uri = contentUri, name = name, duration= duration, size = size,
-                    dateModified =  Date(modifiedDate  * 1000), dateAdded = Date(addedDate  * 1000))
+                    dateModified =  Date(modifiedDate  * 1000), dateAdded = Date(addedDate  * 1000), played = 0)
             }
         }
            Log.i("WORKER", "${videoList.size}")

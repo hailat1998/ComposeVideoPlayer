@@ -10,4 +10,5 @@ import java.util.Date
 @Entity
 data class Video(@PrimaryKey val uri: Uri, val name: String,
                  val dateModified: Date, val dateAdded: Date,
-                 val duration: Int,  val size: Int, )
+                 val duration: Int,  val size: Int,
+                val played: Int)

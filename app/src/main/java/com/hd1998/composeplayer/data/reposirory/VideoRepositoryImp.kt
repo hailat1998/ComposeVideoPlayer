@@ -1,5 +1,6 @@
 package com.hd1998.composeplayer.data.reposirory
 
+import android.net.Uri
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -34,4 +35,8 @@ class VideoRepositoryImp(private val workManager: WorkManager,
         val oneTimeWorkRequest = OneTimeWorkRequestBuilder<VideoWorker>().build()
         workManager.enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.KEEP, oneTimeWorkRequest)
     }
-                         }
+
+    override suspend fun incrementPlayed(uri: Uri, newValue: Int) {
+     database.videoDao().incrementPlayed(newValue, uri)
+    }
+}
